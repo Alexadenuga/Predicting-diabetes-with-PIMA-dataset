@@ -1,0 +1,163 @@
+---
+title: "PREDICTING DIABETES USING THE PIMA INDIAN DIABETES DATASET OF AKIMEL O' ODHAM HERITAGE"
+author: "alex adenuga"
+date: "2023-01-28"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+ 
+ 
+ **Background**
+  
+This report explored the Pima Indian Diabetes data set of the people of Gila River Indian Community where all patients are females who are at least 21 years old. It was extracted as a sub-data that was collected from the  National Institute of Diabetes and Digestive Kidney Diseases (NIDDK) data derived from an epidemiological research done between  1960s and 1970s. NIDDK is a subsection of National Institute of Health in the United States. The methodologies used are logistic regression model and Naive Bayes Models; these are classification models for binary response variables.
+ 
+ 
+The analytical processes followed when analyzing the data showed the guidelines required to predict futuristic incidences of having diabetes when using classification models. A comparison between the Logistic regression model and Naive Bayes model was performed using 0.5 and 0.25 threshold for prediction of probability that a patient has diabetes or not. We examined the the error rate and the changes that occurred in the confusion matrix in each and both models.
+
+
+
+***Methods and Code chunks**
+
+The logistic regression model and the Naive Bayes modelling methods were used in this report. 
+ 
+##The data contained:  
+
+```{r}
+diabetes<-read.csv("diabetes.csv")
+names(diabetes)
+
+```
+
+
+#Visualizing the data
+
+```{r}
+plot(diabetes)
+
+```
+Note: There seem to be correlation between Pregnancies and Age. correlation between Insulin and SkinThickness
+
+
+#checking the correlation to be sure of what showed on the plot
+```{r eval=FALSE}
+cor(diabetes)
+```
+Note: The correlation matrix showed that  Pregnancies and Age has correlation of (`r round(cor(diabetes$Pregnancies, diabetes$Age), 2)`). While Insulin and SkinThickness has a correlation of (`r round(cor(diabetes$Insulin, diabetes$SkinThickness), 2)`). The implication is that we may decide to remove one or both pairs of variables from the model.
+
+
+#The Logistic Regression Model
+
+```{r}
+mod_log<-glm(Outcome~.-Age-SkinThickness-Insulin, data = diabetes, family = binomial)
+summary(mod_log)
+
+```
+Note: Due to the non significant behavior of some of the  variables; possibly as a result of confounding; Age, SkinThickness and Insulin were removed from the model to improve the model performance.
+
+
+#The Logistic regression model Prediction
+
+```{r}
+Pred_diabetes<-predict.glm(mod_log, type = "response")
+Pred_diabetes[1:10]
+
+```
+
+#Logistic regression Model Accuracy Test with 0.5 threshold
+
+```{r}
+Test_pred_diabetes<-ifelse(test = Pred_diabetes>0.5,
+                           yes = 1,
+                           no = 0)
+Tab_pred_diabetes<-table(diabetes$Outcome, Test_pred_diabetes)
+
+Tab_pred_diabetes
+
+ErrorRate<-(Tab_pred_diabetes[1,2] + Tab_pred_diabetes[2,1]) / sum(Tab_pred_diabetes) * 100
+
+ErrorRate
+```
+#Logistic regression Model Accuracy Test with 0.25 threshold
+
+```{r}
+Test_pred_diabetes2<-ifelse(test = Pred_diabetes>0.25,
+                           yes = 1,
+                           no = 0)
+Tab_pred_diabetes2<-table(diabetes$Outcome, Test_pred_diabetes2)
+
+Tab_pred_diabetes2
+
+ErrorRate2<-(Tab_pred_diabetes2[1,2] + Tab_pred_diabetes2[2,1]) / sum(Tab_pred_diabetes2) * 100
+
+ErrorRate2
+```
+
+#Naive Bayes Model
+
+```{r}
+library(e1071)
+set.seed(100)
+
+mod_nb<-naiveBayes(Outcome~.-Age-SkinThickness-Insulin, data = diabetes)
+
+Pred_diabetes_nb<-predict(mod_nb, newdata = diabetes, type = "raw")[, 2]
+
+Pred_diabetes_nb[1:10]
+
+```
+#Naive Bayes Model Accuracy Test with 0.5 threshold
+```{r}
+Test_pred_diabetes_nb<-ifelse(test = Pred_diabetes_nb > 0.5,
+                              yes = 1,
+                              no = 0)
+Tab_pred_diabetes_nb<-table(diabetes$Outcome, Test_pred_diabetes_nb)
+
+Tab_pred_diabetes_nb
+
+ErrorRate_nb<- (Tab_pred_diabetes_nb[1,2] + Tab_pred_diabetes_nb[2,1]) / sum(Tab_pred_diabetes_nb) * 100
+
+ErrorRate_nb
+
+
+
+```
+#Naive Bayes Model Accuracy Test with 0.25 threshold
+```{r}
+Test_pred_diabetes_nb2<-ifelse(test = Pred_diabetes_nb > 0.25,
+                              yes = 1,
+                              no = 0)
+Tab_pred_diabetes_nb2<-table(diabetes$Outcome, Test_pred_diabetes_nb2)
+
+Tab_pred_diabetes_nb2
+
+ErrorRate_nb2<- (Tab_pred_diabetes_nb2[1,2] + Tab_pred_diabetes_nb2[2,1]) / sum(Tab_pred_diabetes_nb2) * 100
+
+ErrorRate_nb2
+
+
+
+```
+
+**Discussion**
+
+Looking at the logistic regression model, It was observed that a reduction in the prediction threshold from  to  lead to in increase in the false positive prediction from 59 to 183, a reduction in the false negative from  114 to 46, a decrease in the true negative from 441 to 317 and an increase in the true positive from 154 to 222; noting that there was also an increase the the error rate.
+
+In the same pattern, the Naive Bayes model recorded there was an increase in the false positive prediction from 62 to 143, a reduction in the false negative from 110 to 58, a decrease in the true negative from 438 to 357 and an increase in the true positive prediction from 158 to 210; noting that there was also an increase in the error rate from 22.4% to 26.1%
+
+
+The 0.5 and 0.25 threshold was used to test the model accuracy of the Logistic regression model and the Naive Bayes model.It was noted that the Naive Bayes Model has the smallest error rate with 22.3% upon prediction  while the logistic regression model had 22.5% using greater than 0.5 as the predictions threshold for the probability of having diabetes and 26.2% and 29.8% respectively when the prediction threshold was changed to 0.25. 
+
+
+**Conclusion**
+
+Comparing the prediction performance of Logistic regression model and Naive Bayes model using the diabetes data: The Naive Bayes model appear to perform better using the error rate as it has a lower error rate upon prediction even when the prediction threshold was changed. It is worthy of note that the behavior of both models were identical when the prediction threshold was changed from 0.5 to 0.25. 
+
+
+
+ 
+ 
+ 
+ 
